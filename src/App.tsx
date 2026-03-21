@@ -8,8 +8,15 @@ import { GoogleGenAI } from '@google/genai';
 import { motion, AnimatePresence } from 'motion/react';
 import { Sparkles, Play, Pause, RefreshCw, Download, Facebook, MessageCircle } from 'lucide-react';
 
-// Initialize Gemini API
-const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
+// Initialize Gemini API lazily to catch missing key errors gracefully
+const getAI = () => {
+  // Support both process.env and import.meta.env for maximum compatibility
+  const apiKey = process.env.GEMINI_API_KEY || import.meta.env.VITE_GEMINI_API_KEY;
+  if (!apiKey) {
+    throw new Error('找不到 API 金鑰！請確認您在 Vercel 有正確設定 GEMINI_API_KEY，並且「重新打包 (取消勾選 Use existing build cache)」。');
+  }
+  return new GoogleGenAI({ apiKey });
+};
 
 // Helper to convert raw PCM base64 to a WAV Blob URL
 function createWavUrl(base64PCM: string, sampleRate = 24000): string {
@@ -116,6 +123,7 @@ export default function App() {
     const finalWish = wish === '其他' ? customWish : wish;
 
     try {
+      const ai = getAI();
       // 1. Generate Blessing Text
       const textResponse = await ai.models.generateContent({
         model: 'gemini-3-flash-preview',
