@@ -10,10 +10,11 @@ import { Sparkles, Play, Pause, RefreshCw, Download, Facebook, MessageCircle } f
 
 // Initialize Gemini API lazily to catch missing key errors gracefully
 const getAI = () => {
-  // Support both process.env and import.meta.env for maximum compatibility
-  const apiKey = process.env.GEMINI_API_KEY || import.meta.env.VITE_GEMINI_API_KEY;
+  // In Vite, environment variables MUST start with VITE_ to be exposed to the client.
+  // Vercel injects them during the build process.
+  const apiKey = import.meta.env.VITE_GEMINI_API_KEY;
   if (!apiKey) {
-    throw new Error('找不到 API 金鑰！請確認您在 Vercel 有正確設定 GEMINI_API_KEY，並且「重新打包 (取消勾選 Use existing build cache)」。');
+    throw new Error('找不到 API 金鑰！請確認您在 Vercel 有正確設定 VITE_GEMINI_API_KEY，並且「重新打包 (取消勾選 Use existing build cache)」。');
   }
   return new GoogleGenAI({ apiKey });
 };
